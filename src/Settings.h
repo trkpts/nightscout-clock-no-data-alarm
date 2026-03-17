@@ -59,4 +59,11 @@ public:
     bool alarm_intensive_mode;
     bool web_auth_enable;
     String web_auth_password;
+    
+    // No Data Alarm Settings
+    bool alarm_no_data_enabled;
+    int alarm_no_data_minutes;
+    int alarm_no_data_snooze_minutes;
+    String alarm_no_data_silence_interval;
+    String alarm_no_data_melody;
 };

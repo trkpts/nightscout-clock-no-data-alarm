@@ -69,4 +69,5 @@ extern const String sound_urgent_low PROGMEM;
 extern const String sound_low PROGMEM;
 extern const String sound_high PROGMEM;
 extern const String sound_boot PROGMEM;
+extern const String sound_no_data PROGMEM;
 #endif  // Globals_H
