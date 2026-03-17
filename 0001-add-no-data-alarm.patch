@@ -1,0 +1,72 @@
+From: Assistant
+Date: Mon, 17 Mar 2026 02:50:00 +0000
+Subject: [PATCH] Add no-data alarm feature
+
+This patch adds an alarm that triggers when glucose data hasn't been
+received for a configurable time period (5-60 minutes).
+
+---
+ src/Settings.h            |  5 +++++
+ src/SettingsManager.cpp   | 20 ++++++++++++++++++++
+ src/BGAlarmManager.cpp    | 95 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------------
+ src/globals.h             |  1 +
+ 4 files changed, 89 insertions(+), 32 deletions(-)
+
+**To apply this patch:**
+1. Clone the repository: git clone https://github.com/ktomy/nightscout-clock.git
+2. Copy the modified files from the patch directories OR
+3. Manually apply the changes shown below
+
+---
+
+## 1. Settings.h - Add these 5 fields to the Settings class:
+
+    // No Data Alarm Settings
+    bool alarm_no_data_enabled;
+    int alarm_no_data_minutes;
+    int alarm_no_data_snooze_minutes;
+    String alarm_no_data_silence_interval;
+    String alarm_no_data_melody;
+
+## 2. SettingsManager.cpp - Add to loadSettingsFromFile():
+
+    // No Data Alarm
+    settings.alarm_no_data_enabled = (*doc)["alarm_no_data_enabled"].as<bool>();
+    settings.alarm_no_data_minutes = (*doc)["alarm_no_data_minutes"].as<int>();
+    if (settings.alarm_no_data_minutes < 5) settings.alarm_no_data_minutes = 10;
+    if (settings.alarm_no_data_minutes > 60) settings.alarm_no_data_minutes = 60;
+    settings.alarm_no_data_snooze_minutes = (*doc)["alarm_no_data_snooze_interval"].as<int>();
+    settings.alarm_no_data_silence_interval = (*doc)["alarm_no_data_silence_interval"].as<String>();
+    settings.alarm_no_data_melody = (*doc)["alarm_no_data_melody"].as<String>();
+
+## 3. SettingsManager.cpp - Add to saveSettingsToFile():
+
+    // No Data Alarm
+    (*doc)["alarm_no_data_enabled"] = settings.alarm_no_data_enabled;
+    (*doc)["alarm_no_data_minutes"] = settings.alarm_no_data_minutes;
+    (*doc)["alarm_no_data_snooze_interval"] = settings.alarm_no_data_snooze_minutes;
+    (*doc)["alarm_no_data_silence_interval"] = settings.alarm_no_data_silence_interval;
+    (*doc)["alarm_no_data_melody"] = settings.alarm_no_data_melody;
+
+## 4. globals.h - Add default melody:
+
+    const char sound_no_data[] = "NoData:d=4,o=5,b=100:8c,8e,8g,8c6,4p,8c,8e,8g,8c6";
+
+## 5. BGAlarmManager.cpp - Use the complete replacement file provided
+
+The complete modified BGAlarmManager.cpp handles:
+- No-data alarm setup in setup()
+- No-data detection in tick()
+- Visual "No Data" message in snoozeAlarm()
+- Proper alarm state management
+
+## Default config.json additions:
+
+    "alarm_no_data_enabled": false,
+    "alarm_no_data_minutes": 10,
+    "alarm_no_data_snooze_interval": 10,
+    "alarm_no_data_silence_interval": "",
+    "alarm_no_data_melody": ""
+
+-- 
+2.44.0
