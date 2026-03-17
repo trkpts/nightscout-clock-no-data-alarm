@@ -705,6 +705,78 @@
                     </div>
                 </div>
                 <br />
+                <div class="card" id="no_data_alarm_card">
+                    <h5 class="card-header">No data alert</h5>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-2">
+                                <br class="d-none d-sm-block" />
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" value="" id="alarm_no_data_enable" />
+                                    <label class="form-check-label" for="alarm_no_data_enable">
+                                        Enable alert
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-sm-1 align-content-center">
+                                <button id="btn_no_data_alarm_try" class="btn btn-outline-primary w-100" type="button">
+                                    Try
+                                </button>
+                            </div>
+                            <div class="col-sm-3">
+                                <label for="alarm_no_data_minutes" class="form-label">Minutes without data</label>
+                                <select class="form-select" id="alarm_no_data_minutes" required disabled>
+                                    <option value="5">5 minutes</option>
+                                    <option value="10" selected>10 minutes</option>
+                                    <option value="15">15 minutes</option>
+                                    <option value="20">20 minutes</option>
+                                    <option value="30">30 minutes</option>
+                                    <option value="45">45 minutes</option>
+                                    <option value="60">60 minutes</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-3">
+                                <label for="alarm_no_data_snooze" class="form-label">Snooze for</label>
+                                <select class="form-select" id="alarm_no_data_snooze" required disabled>
+                                    <option value="">Choose...</option>
+                                    <option value="5">5 minutes</option>
+                                    <option value="10" selected>10 minutes</option>
+                                    <option value="15">15 minutes</option>
+                                    <option value="30">30 minutes</option>
+                                    <option value="60">1 hour</option>
+                                    <option value="0">Until data returns</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-3">
+                                <label for="alarm_no_data_silence" class="form-label">Silence interval</label>
+                                <select class="form-select" id="alarm_no_data_silence" required disabled>
+                                    <option value="">Choose...</option>
+                                    <option value="0" selected>No silence</option>
+                                    <option value="22_8">22:00 - 8:00</option>
+                                    <option value="8_22">08:00 - 22:00</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <label for="alarm_no_data_melody" class="form-label">Custom melody (RTTTL) (optional)</label>
+                                <input type="text" class="form-control" id="alarm_no_data_melody"
+                                    placeholder="NoData:d=4,o=5,b=100:8c,8e,8g,8c6,4p,8c,8e,8g,8c6" disabled />
+                                <div class="form-text">Leave empty to use the default no data alert sound.</div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="alert alert-info" role="alert">
+                                    <i class="bi bi-info-circle"></i>
+                                    This alert triggers when no glucose readings are received for the specified time.
+                                    Useful for detecting sensor failures or connection issues.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br />
                 <div class="card" id="device_settings_card">
                     <h5 class="card-header">Device settings</h5>
                     <div class="card-body">
