@@ -1,3 +1,6 @@
+// BGAlarmManager.cpp - MODIFIED VERSION WITH NO-DATA ALARM
+// Replace your existing BGAlarmManager.cpp with this version
+
 #include <BGAlarmManager.h>
 #include <BGDisplayManager.h>
 #include <PeripheryManager.h>
@@ -26,7 +29,6 @@ BGAlarmManager_& BGAlarmManager_::getInstance() {
 BGAlarmManager_& bgAlarmManager = bgAlarmManager.getInstance();
 
 #ifdef DEBUG_ALARMS
-
 int debounceTicks = 0;
 int debounceTicks2 = 0;
 int debounceTicks3 = 0;
@@ -35,10 +37,13 @@ int debounceTicks5 = 0;
 int debounceTicks6 = 0;
 int debounceTicks7 = 0;
 int debounceTicks8 = 0;
-
+int debounceTicks9 = 0;  // Added for no-data alarm
 #endif
 
 void BGAlarmManager_::setup() {
+    // Clear existing alarms
+    enabledAlarms.clear();
+    
     if (SettingsManager.settings.alarm_urgent_low_enabled) {
         AlarmData alarmData;
         alarmData.bottom = 1;
@@ -48,6 +53,7 @@ void BGAlarmManager_::setup() {
         alarmData.lastAlarmTime = 0;
         alarmData.alarmSound =
             pickAlarmMelody(SettingsManager.settings.alarm_urgent_low_melody, sound_urgent_low);
+        alarmData.isSnoozed = false;
         enabledAlarms.push_back(alarmData);
     }
     if (SettingsManager.settings.alarm_low_enabled) {
@@ -58,6 +64,7 @@ void BGAlarmManager_::setup() {
         alarmData.silenceInterval = SettingsManager.settings.alarm_low_silence_interval;
         alarmData.lastAlarmTime = 0;
         alarmData.alarmSound = pickAlarmMelody(SettingsManager.settings.alarm_low_melody, sound_low);
+        alarmData.isSnoozed = false;
         enabledAlarms.push_back(alarmData);
     }
     if (SettingsManager.settings.alarm_high_enabled) {
@@ -68,11 +75,26 @@ void BGAlarmManager_::setup() {
         alarmData.silenceInterval = SettingsManager.settings.alarm_high_silence_interval;
         alarmData.lastAlarmTime = 0;
         alarmData.alarmSound = pickAlarmMelody(SettingsManager.settings.alarm_high_melody, sound_high);
+        alarmData.isSnoozed = false;
+        enabledAlarms.push_back(alarmData);
+    }
+    
+    // NO DATA ALARM - NEW
+    if (SettingsManager.settings.alarm_no_data_enabled) {
+        AlarmData alarmData;
+        alarmData.bottom = -1;  // Special marker for no-data alarm
+        alarmData.top = -1;     // Special marker for no-data alarm
+        alarmData.snoozeTimeMinutes = SettingsManager.settings.alarm_no_data_snooze_minutes;
+        alarmData.silenceInterval = SettingsManager.settings.alarm_no_data_silence_interval;
+        alarmData.lastAlarmTime = 0;
+        alarmData.alarmSound =
+            pickAlarmMelody(SettingsManager.settings.alarm_no_data_melody, sound_no_data);
+        alarmData.isSnoozed = false;
         enabledAlarms.push_back(alarmData);
     }
 
     if (SettingsManager.settings.alarm_intensive_mode) {
-        alarmIntervalSeconds = ALARM_REPEAT_INTERVAL_INTENSIVE_SECONDS;  // repeat every 2 seconds
+        alarmIntervalSeconds = ALARM_REPEAT_INTERVAL_INTENSIVE_SECONDS;
     } else {
         alarmIntervalSeconds = ALARM_REPEAT_INTERVAL_SECONDS;
     }
@@ -80,100 +102,106 @@ void BGAlarmManager_::setup() {
 
 bool isInSilentInterval(String silenceInterval) {
     if (silenceInterval == "" || silenceInterval == "0") {
-#ifdef DEBUG_ALARMS
-
-        if (debounceTicks3 % 5000 == 0) {
-            DEBUG_PRINTLN("Alarms: no silence interval defined");
-        }
-        debounceTicks3++;
-        if (debounceTicks3 > 5000) {
-            debounceTicks3 = 0;
-        }
-
-#endif
         return false;
     }
 
     auto time = ServerManager.getTimezonedTime();
 
     if (silenceInterval == "22_8" && (time.tm_hour >= 22 || time.tm_hour < 8)) {
-#ifdef DEBUG_ALARMS
-
-        if (debounceTicks4 % 5000 == 0) {
-            DEBUG_PRINTLN("Alarms: silence interval 22_8 active");
-        }
-        debounceTicks4++;
-        if (debounceTicks4 > 5000) {
-            debounceTicks4 = 0;
-        }
-#endif
         return true;
     }
 
     if (silenceInterval == "8_22" && (time.tm_hour >= 8 && time.tm_hour < 22)) {
-#ifdef DEBUG_ALARMS
-
-        if (debounceTicks5 % 5000 == 0) {
-            DEBUG_PRINTLN("Alarms: silence interval 8_22 active");
-        }
-        debounceTicks5++;
-        if (debounceTicks5 > 5000) {
-            debounceTicks5 = 0;
-        }
-#endif
         return true;
     }
 
-#ifdef DEBUG_ALARMS
-
-    if (debounceTicks6 % 5000 == 0) {
-        DEBUG_PRINTLN("Alarms: silence interval exists but not active");
-    }
-    debounceTicks6++;
-    if (debounceTicks6 > 5000) {
-        debounceTicks6 = 0;
-    }
-#endif
     return false;
 }
 
-#ifdef DEBUG_ALARMS
-#endif
+bool isNoDataAlarm(const AlarmData& alarm) {
+    return alarm.bottom == -1 && alarm.top == -1;
+}
 
 void BGAlarmManager_::tick() {
     auto glucoseReading = bgDisplayManager.getLastDisplayedGlucoseReading();
+    
+    // Check no-data condition
+    bool isDataStale = false;
+    
+    // Check if glucose reading itself is old
+    if (glucoseReading == nullptr) {
+        isDataStale = true;
+    } else if (glucoseReading->getSecondsAgo() > SettingsManager.settings.alarm_no_data_minutes * 60) {
+        isDataStale = true;
+    }
+    
+    // Handle no-data alarms
+    for (AlarmData& alarmData : enabledAlarms) {
+        if (isNoDataAlarm(alarmData)) {
+            if (isDataStale) {
+                // Data is stale - trigger or maintain alarm
+                if (isInSilentInterval(alarmData.silenceInterval)) {
+                    if (activeAlarm != NULL && isNoDataAlarm(*activeAlarm)) {
+                        activeAlarm->isSnoozed = false;
+                        activeAlarm->lastAlarmTime = 0;
+                    }
+                    if (activeAlarm == &alarmData) {
+                        activeAlarm = NULL;
+                    }
+                    return;
+                }
+                
+                if (activeAlarm == NULL) {
+                    // New alarm
+                    activeAlarm = &alarmData;
+                    alarmData.lastAlarmTime = ServerManager.getUtcEpoch();
+                    alarmData.isSnoozed = false;
+                    PeripheryManager.playRTTTLString(alarmData.alarmSound);
+                    DEBUG_PRINTLN("Playing NO DATA alarm (new)");
+                } else if (activeAlarm == &alarmData) {
+                    // Existing alarm
+                    if (activeAlarm->isSnoozed) {
+                        if (activeAlarm->snoozeTimeMinutes != 0 &&
+                            ServerManager.getUtcEpoch() - activeAlarm->lastAlarmTime >
+                                60 * activeAlarm->snoozeTimeMinutes) {
+                            activeAlarm->isSnoozed = false;
+                            activeAlarm->lastAlarmTime = ServerManager.getUtcEpoch();
+                            PeripheryManager.playRTTTLString(alarmData.alarmSound);
+                            DEBUG_PRINTLN("Playing NO DATA alarm (after snooze)");
+                        }
+                    } else {
+                        if (ServerManager.getUtcEpoch() - activeAlarm->lastAlarmTime >
+                            alarmIntervalSeconds) {
+                            activeAlarm->lastAlarmTime = ServerManager.getUtcEpoch();
+                            PeripheryManager.playRTTTLString(alarmData.alarmSound);
+                            DEBUG_PRINTLN("Playing NO DATA alarm (repeat)");
+                        }
+                    }
+                }
+                return;
+            } else {
+                // Data is fresh - clear no-data alarm if active
+                if (activeAlarm != NULL && isNoDataAlarm(*activeAlarm)) {
+                    activeAlarm->isSnoozed = false;
+                    activeAlarm->lastAlarmTime = 0;
+                    activeAlarm = NULL;
+                }
+            }
+        }
+    }
+    
+    // Handle glucose value alarms (original logic)
     if (glucoseReading == nullptr ||
         glucoseReading->getSecondsAgo() >
             SettingsManager.settings.bg_data_too_old_threshold_minutes * 60) {
-        activeAlarm = NULL;
-
-#ifdef DEBUG_ALARMS
-
-        if (debounceTicks % 5000 == 0) {
-            DEBUG_PRINTLN("Alarms: no alarms as no glucose readings or readings are old");
-        }
-        debounceTicks++;
-        if (debounceTicks > 5000) {
-            debounceTicks = 0;
-        }
-#endif
+        // Don't process glucose alarms if data is too old
         return;
     }
 
     for (AlarmData& alarmData : enabledAlarms) {
+        if (isNoDataAlarm(alarmData)) continue;  // Skip no-data alarms
+        
         if (glucoseReading->sgv >= alarmData.bottom && glucoseReading->sgv <= alarmData.top) {
-#ifdef DEBUG_ALARMS
-
-            if (debounceTicks2 % 5000 == 0) {
-                DEBUG_PRINTLN("Alarms: glucose reading in alarm range");
-            }
-            debounceTicks2++;
-            if (debounceTicks2 > 5000) {
-                debounceTicks2 = 0;
-            }
-
-#endif
-
             if (isInSilentInterval(alarmData.silenceInterval)) {
                 if (activeAlarm != NULL) {
                     activeAlarm->isSnoozed = false;
@@ -187,7 +215,7 @@ void BGAlarmManager_::tick() {
                 alarmData.lastAlarmTime = ServerManager.getUtcEpoch();
                 alarmData.isSnoozed = false;
                 PeripheryManager.playRTTTLString(alarmData.alarmSound);
-                DEBUG_PRINTLN("Playing alarm sound (nee alarm occurred)");
+                DEBUG_PRINTLN("Playing alarm sound (new alarm)");
             } else {
                 if (activeAlarm->isSnoozed) {
                     if (activeAlarm->snoozeTimeMinutes != 0 &&
@@ -197,51 +225,27 @@ void BGAlarmManager_::tick() {
                         activeAlarm->lastAlarmTime = ServerManager.getUtcEpoch();
                         PeripheryManager.playRTTTLString(alarmData.alarmSound);
                         DEBUG_PRINTLN("Playing alarm sound after snooze");
-                    } else {
-#ifdef DEBUG_ALARMS
-
-                        if (debounceTicks8 % 5000 == 0) {
-                            DEBUG_PRINTLN(
-                                "Alarms: snoozed, too early to sound: " +
-                                String(ServerManager.getUtcEpoch() - activeAlarm->lastAlarmTime) +
-                                ", snooze interval: " + String(activeAlarm->snoozeTimeMinutes));
-                        }
-                        debounceTicks8++;
-                        if (debounceTicks8 > 5000) {
-                            debounceTicks8 = 0;
-                        }
-#endif
                     }
                 } else {
                     if (ServerManager.getUtcEpoch() - activeAlarm->lastAlarmTime >
                         alarmIntervalSeconds) {
                         activeAlarm->lastAlarmTime = ServerManager.getUtcEpoch();
                         PeripheryManager.playRTTTLString(alarmData.alarmSound);
-                        DEBUG_PRINTLN("Playing alarm sound (alarm already active, not snoozed)");
-                    } else {
-#ifdef DEBUG_ALARMS
-
-                        if (debounceTicks7 % 5000 == 0) {
-                            DEBUG_PRINTLN(
-                                "Alarms: not snoozed, too early to sound: " +
-                                String(ServerManager.getUtcEpoch() - activeAlarm->lastAlarmTime));
-                        }
-                        debounceTicks7++;
-                        if (debounceTicks7 > 5000) {
-                            debounceTicks7 = 0;
-                        }
-#endif
+                        DEBUG_PRINTLN("Playing alarm sound (repeat)");
                     }
                 }
             }
             return;
         }
     }
-    if (activeAlarm != NULL) {
+    
+    if (activeAlarm != NULL && !isNoDataAlarm(*activeAlarm)) {
         activeAlarm->isSnoozed = false;
         activeAlarm->lastAlarmTime = 0;
     }
-    activeAlarm = NULL;
+    if (activeAlarm != NULL && !isNoDataAlarm(*activeAlarm)) {
+        activeAlarm = NULL;
+    }
 }
 
 void BGAlarmManager_::snoozeAlarm() {
@@ -249,7 +253,14 @@ void BGAlarmManager_::snoozeAlarm() {
         DEBUG_PRINTLN("Snoozing alarm");
         DisplayManager.clearMatrix();
         DisplayManager.setTextColor(COLOR_CYAN);
-        DisplayManager.printText(0, 6, "Snoozed", TEXT_ALIGNMENT::CENTER, 0);
+        
+        // Show different message for no-data alarm
+        if (isNoDataAlarm(*activeAlarm)) {
+            DisplayManager.printText(0, 6, "No Data", TEXT_ALIGNMENT::CENTER, 0);
+        } else {
+            DisplayManager.printText(0, 6, "Snoozed", TEXT_ALIGNMENT::CENTER, 0);
+        }
+        
         delay(2000);
         bgDisplayManager.maybeRrefreshScreen(true);
         activeAlarm->isSnoozed = true;
