@@ -18,4 +18,4 @@ const String sound_urgent_low PROGMEM = "urgent_low:d=4,o=5,b=230:4e6,4p,4e6,4p,
 const String sound_low PROGMEM = "low:d=4,o=5,b=200:4e5,4p,4e5,4p,4e5";
 const String sound_high PROGMEM = "high:d=4,o=5,b=125:4e7,p,4e7";
 const String sound_boot PROGMEM = "boot:d=4,o=5,b=320:32c,32e,32g";
-const String sound_no_data PROGMEM = "NoData:d=4,o=5,b=100:8c6,8a5,8c6,8a5";
+const String sound_no_data PROGMEM = "no_data:d=4,o=5,b=100:8c6,8a5,8c6,8a5";
