@@ -57,6 +57,7 @@
         $('#btn_high_alarm_try').on('click', tryAlarm);
         $('#btn_low_alarm_try').on('click', tryAlarm);
         $('#btn_urgent_low_alarm_try').on('click', tryAlarm);
+        $('#btn_no_data_alarm_try').on('click', tryAlarm);
         $('#btn_load_limits_from_ns').on('click', loadNightscoutData);
         $("#btn_save").on('click', validateAndSave);
         $('#btn_auth_login').on('click', loginToWebAuth);
@@ -182,6 +183,7 @@
         $('#btn_high_alarm_try').prop('disabled', isLocked);
         $('#btn_low_alarm_try').prop('disabled', isLocked);
         $('#btn_urgent_low_alarm_try').prop('disabled', isLocked);
+        $('#btn_no_data_alarm_try').prop('disabled', isLocked);
         $('#save_button').toggleClass('d-none', isLocked);
     }
 
@@ -363,6 +365,7 @@
         $('#alarm_high_enable').change((e) => { changeAlarmState(e.target) });
         $('#alarm_low_enable').change((e) => { changeAlarmState(e.target) });
         $('#alarm_urgent_low_enable').change((e) => { changeAlarmState(e.target) });
+        $('#alarm_no_data_enable').change((e) => { changeAlarmState(e.target) });
 
         $('#glucose_source').change(glucoseDataSourceSwitch);
 
@@ -869,6 +872,7 @@
         setAlarmDataToJson(json, 'high');
         setAlarmDataToJson(json, 'low');
         setAlarmDataToJson(json, 'urgent_low');
+        setAlarmDataToJson(json, 'no_data');
         json['alarm_intensive_mode'] = $('#alarm_intensive_mode').is(':checked');
 
         // Additional WiFi
@@ -1199,6 +1203,7 @@
         loadAlarmDataFromJson(json, 'high');
         loadAlarmDataFromJson(json, 'low');
         loadAlarmDataFromJson(json, 'urgent_low');
+        loadAlarmDataFromJson(json, 'no_data');
         $('#alarm_intensive_mode').prop('checked', json['alarm_intensive_mode']);
 
         // Additional WiFi
