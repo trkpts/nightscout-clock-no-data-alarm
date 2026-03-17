@@ -1,0 +1,27 @@
+// ============================================
+// GLOBALS.H - ADD DEFAULT NO-DATA ALARM MELODY
+// ============================================
+
+// Add this line with the other sound constants (sound_urgent_low, sound_low, sound_high):
+
+const char sound_no_data[] = "NoData:d=4,o=5,b=100:8c,8e,8g,8c6,4p,8c,8e,8g,8c6";
+
+
+// ============================================
+// ALTERNATIVE MELODIES (pick one)
+// ============================================
+
+// Gentle chime (recommended for bedroom)
+const char sound_no_data[] = "NoData:d=4,o=5,b=80:8e6,8d6,8c6,4g5";
+
+// Beeps (attention-getting)
+const char sound_no_data[] = "NoData:d=8,o=5,b=120:c,e,g,c6,c,e,g,c6";
+
+// Phone ring style
+const char sound_no_data[] = "NoData:d=4,o=5,b=125:8c6,8a5,8c6,8a5,8c6,8a5,8c6,8a5";
+
+// Old clock style
+const char sound_no_data[] = "NoData:d=2,o=4,b=100:8c5,8c5,8c5";
+
+// Default (distinctive ascending arpeggio with pause)
+const char sound_no_data[] = "NoData:d=4,o=5,b=100:8c,8e,8g,8c6,4p,8c,8e,8g,8c6";
