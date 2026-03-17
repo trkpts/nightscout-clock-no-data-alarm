@@ -39,6 +39,12 @@ static String resolveAlarmMelody(const String& alarmType) {
         }
         return sound_urgent_low;
     }
+    if (alarmType == "no_data") {
+        if (SettingsManager.settings.alarm_no_data_melody.length() > 0) {
+            return SettingsManager.settings.alarm_no_data_melody;
+        }
+        return sound_no_data;
+    }
 
     return "";
 }
