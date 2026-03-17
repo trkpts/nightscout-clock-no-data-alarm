@@ -1,0 +1,259 @@
+<!-- ============================================ -->
+<!-- NIGHTSCOUT CLOCK - NO DATA ALARM UI -->
+<!-- Add this HTML to your index.html file -->
+<!-- Place it after the existing alarm sections -->
+<!-- ============================================ -->
+
+<!-- No Data Alarm Section -->
+<div class="card alarm-section">
+    <div class="card-header">
+        <h3>⏰ No Data Alarm</h3>
+        <p class="help-text">Get alerted when glucose readings stop coming in</p>
+    </div>
+    
+    <div class="card-body">
+        <!-- Enable/Disable -->
+        <div class="form-group checkbox-group">
+            <label class="switch">
+                <input type="checkbox" id="alarm_no_data_enabled" name="alarm_no_data_enabled">
+                <span class="slider round"></span>
+            </label>
+            <label for="alarm_no_data_enabled" class="checkbox-label">
+                <strong>Enable No Data Alarm</strong>
+                <span class="help-text">Sound alarm when no data received for specified time</span>
+            </label>
+        </div>
+        
+        <!-- Time Threshold -->
+        <div class="form-group">
+            <label for="alarm_no_data_minutes">
+                Minutes without data before alarm:
+                <span class="value-display" id="no_data_minutes_display">10</span>
+            </label>
+            <input type="range" id="alarm_no_data_minutes" name="alarm_no_data_minutes" 
+                   min="5" max="60" value="10" step="5"
+                   oninput="document.getElementById('no_data_minutes_display').textContent = this.value">
+            <div class="range-labels">
+                <span>5 min</span>
+                <span>30 min</span>
+                <span>60 min</span>
+            </div>
+        </div>
+        
+        <!-- Snooze Interval -->
+        <div class="form-group">
+            <label for="alarm_no_data_snooze_interval">Snooze duration:</label>
+            <select id="alarm_no_data_snooze_interval" name="alarm_no_data_snooze_interval">
+                <option value="5">5 minutes</option>
+                <option value="10" selected>10 minutes</option>
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+                <option value="60">1 hour</option>
+            </select>
+        </div>
+        
+        <!-- Silence Interval -->
+        <div class="form-group">
+            <label for="alarm_no_data_silence_interval">Silent period:</label>
+            <select id="alarm_no_data_silence_interval" name="alarm_no_data_silence_interval">
+                <option value="">Never silent</option>
+                <option value="22_8">Night (22:00 - 08:00)</option>
+                <option value="8_22">Day (08:00 - 22:00)</option>
+            </select>
+        </div>
+        
+        <!-- Custom Melody -->
+        <div class="form-group melody-group">
+            <label for="alarm_no_data_melody">Custom melody (RTTTL format):</label>
+            <div class="input-button-group">
+                <input type="text" id="alarm_no_data_melody" name="alarm_no_data_melody" 
+                       placeholder="Leave empty for default"
+                       class="melody-input">
+                <button type="button" class="btn-secondary" onclick="testAlarm('no_data')">
+                    🔊 Test
+                </button>
+            </div>
+            <span class="help-text">
+                <a href="https://adamonsoon.github.io/rtttl-play/" target="_blank">Create custom melodies</a>
+            </span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ============================================ -->
+<!-- JAVASCRIPT - Add to your existing script -->
+<!-- ============================================ -->
+
+<script>
+// ============================================
+// CONFIG LOADING - Add to your loadConfig() function
+// ============================================
+
+function loadConfig(config) {
+    // ... existing config loading code ...
+    
+    // No Data Alarm
+    document.getElementById('alarm_no_data_enabled').checked = config.alarm_no_data_enabled || false;
+    document.getElementById('alarm_no_data_minutes').value = config.alarm_no_data_minutes || 10;
+    document.getElementById('no_data_minutes_display').textContent = config.alarm_no_data_minutes || 10;
+    document.getElementById('alarm_no_data_snooze_interval').value = config.alarm_no_data_snooze_interval || 10;
+    document.getElementById('alarm_no_data_silence_interval').value = config.alarm_no_data_silence_interval || '';
+    document.getElementById('alarm_no_data_melody').value = config.alarm_no_data_melody || '';
+    
+    // ... rest of config loading ...
+}
+
+
+// ============================================
+// CONFIG SAVING - Add to your saveConfig() function
+// ============================================
+
+function saveConfig() {
+    const config = {};
+    
+    // ... existing config collection code ...
+    
+    // No Data Alarm
+    config.alarm_no_data_enabled = document.getElementById('alarm_no_data_enabled').checked;
+    config.alarm_no_data_minutes = parseInt(document.getElementById('alarm_no_data_minutes').value);
+    config.alarm_no_data_snooze_interval = parseInt(document.getElementById('alarm_no_data_snooze_interval').value);
+    config.alarm_no_data_silence_interval = document.getElementById('alarm_no_data_silence_interval').value;
+    config.alarm_no_data_melody = document.getElementById('alarm_no_data_melody').value;
+    
+    // ... rest of config saving ...
+    
+    return config;
+}
+
+
+// ============================================
+// ALARM TESTING - Update your testAlarm() function
+// ============================================
+
+function testAlarm(alarmType) {
+    let melody = '';
+    
+    switch(alarmType) {
+        case 'high':
+            melody = document.getElementById('alarm_high_melody').value || 
+                     'High:d=4,o=5,b=100:8c,8e,8g,8c6';
+            break;
+        case 'low':
+            melody = document.getElementById('alarm_low_melody').value || 
+                     'Low:d=4,o=5,b=100:8a,8c6,8e6';
+            break;
+        case 'urgent_low':
+            melody = document.getElementById('alarm_urgent_low_melody').value || 
+                     'Urgent:d=4,o=5,b=150:8c,8c,8c,8c';
+            break;
+        case 'no_data':
+            melody = document.getElementById('alarm_no_data_melody').value || 
+                     'NoData:d=4,o=5,b=100:8c,8e,8g,8c6,4p,8c,8e,8g,8c6';
+            break;
+    }
+    
+    // Send test request to device
+    fetch('/api/alarm/custom', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rtttl: melody })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'ok') {
+            showNotification('Playing test sound...', 'success');
+        } else {
+            showNotification('Failed to play test sound', 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Error: ' + error.message, 'error');
+    });
+}
+</script>
+
+
+<!-- ============================================ -->
+<!-- CSS - Add these styles to your stylesheet -->
+<!-- ============================================ -->
+
+<style>
+/* Range slider styling */
+input[type="range"] {
+    width: 100%;
+    margin: 10px 0;
+}
+
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #666;
+    margin-top: -5px;
+}
+
+.value-display {
+    display: inline-block;
+    background: #007bff;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 14px;
+    margin-left: 10px;
+}
+
+/* Melody input group */
+.melody-group .input-button-group {
+    display: flex;
+    gap: 10px;
+}
+
+.melody-group .melody-input {
+    flex: 1;
+}
+
+.melody-group .btn-secondary {
+    white-space: nowrap;
+}
+
+/* Card styling */
+.alarm-section {
+    border-left: 4px solid #dc3545;
+}
+
+.alarm-section .card-header {
+    background-color: #f8f9fa;
+}
+
+/* Checkbox group */
+.checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.checkbox-label {
+    flex: 1;
+}
+
+.checkbox-label .help-text {
+    display: block;
+    margin-top: 4px;
+}
+
+/* Help text */
+.help-text {
+    color: #666;
+    font-size: 13px;
+}
+
+.help-text a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.help-text a:hover {
+    text-decoration: underline;
+}
+</style>
