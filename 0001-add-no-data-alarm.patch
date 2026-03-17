@@ -50,7 +50,7 @@ received for a configurable time period (5-60 minutes).
 
 ## 4. globals.h - Add default melody:
 
-    const char sound_no_data[] = "NoData:d=4,o=5,b=100:8c,8e,8g,8c6,4p,8c,8e,8g,8c6";
+    const char sound_no_data[] = "no_data:d=4,o=5,b=100:8c,8e,8g,8c6,4p,8c,8e,8g,8c6";
 
 ## 5. BGAlarmManager.cpp - Use the complete replacement file provided
 

@@ -76,7 +76,7 @@ Add after the existing alarm saving code:
 Add the default melody constant:
 
 ```cpp
-const char sound_no_data[] = "NoData:d=4,o=5,b=100:8c,8e,8g,8c6,4p,8c,8e,8g,8c6";
+const char sound_no_data[] = "no_data:d=4,o=5,b=100:8c,8e,8g,8c6,4p,8c,8e,8g,8c6";
 ```
 
 ### Step 4: Replace BGAlarmManager.cpp
@@ -203,7 +203,7 @@ Choose from these RTTTL melodies:
 "NoData:d=2,o=4,b=100:8c5,8c5,8c5"
 
 // Default (ascending arpeggio)
-"NoData:d=4,o=5,b=100:8c,8e,8g,8c6,4p,8c,8e,8g,8c6"
+"no_data:d=4,o=5,b=100:8c,8e,8g,8c6,4p,8c,8e,8g,8c6"
 ```
 
 ## API Endpoints
