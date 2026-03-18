@@ -70,7 +70,7 @@ void BGAlarmManager_::setup() {
     if (SettingsManager.settings.alarm_high_enabled) {
         AlarmData alarmData;
         alarmData.bottom = SettingsManager.settings.alarm_high_mgdl;
-        alarmData.top = 401;
+        alarmData.top = 450;
         alarmData.snoozeTimeMinutes = SettingsManager.settings.alarm_high_snooze_minutes;
         alarmData.silenceInterval = SettingsManager.settings.alarm_high_silence_interval;
         alarmData.lastAlarmTime = 0;
@@ -87,8 +87,7 @@ void BGAlarmManager_::setup() {
         alarmData.snoozeTimeMinutes = SettingsManager.settings.alarm_no_data_snooze_minutes;
         alarmData.silenceInterval = SettingsManager.settings.alarm_no_data_silence_interval;
         alarmData.lastAlarmTime = 0;
-        alarmData.alarmSound =
-            pickAlarmMelody(SettingsManager.settings.alarm_no_data_melody, sound_no_data);
+        alarmData.alarmSound = pickAlarmMelody(SettingsManager.settings.alarm_no_data_melody, sound_no_data);
         alarmData.isSnoozed = false;
         enabledAlarms.push_back(alarmData);
     }

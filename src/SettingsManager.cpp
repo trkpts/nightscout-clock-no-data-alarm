@@ -173,8 +173,6 @@ bool SettingsManager_::loadSettingsFromFile() {
     // No Data Alarm
     settings.alarm_no_data_enabled = (*doc)["alarm_no_data_enabled"].as<bool>();
     settings.alarm_no_data_minutes = (*doc)["alarm_no_data_minutes"].as<int>();
-    if (settings.alarm_no_data_minutes < 5) settings.alarm_no_data_minutes = 10;
-    if (settings.alarm_no_data_minutes > 60) settings.alarm_no_data_minutes = 60;
     settings.alarm_no_data_snooze_minutes = (*doc)["alarm_no_data_snooze_interval"].as<int>();
     settings.alarm_no_data_silence_interval = (*doc)["alarm_no_data_silence_interval"].as<String>();
     settings.alarm_no_data_melody = (*doc)["alarm_no_data_melody"].as<String>();

@@ -68,6 +68,6 @@ extern uint8_t MAX_BRIGHTNESS;
 extern const String sound_urgent_low PROGMEM;
 extern const String sound_low PROGMEM;
 extern const String sound_high PROGMEM;
-extern const String sound_boot PROGMEM;
 extern const String sound_no_data PROGMEM;
+extern const String sound_boot PROGMEM;
 #endif  // Globals_H
