@@ -21,6 +21,8 @@ ServerManager_& ServerManager_::getInstance() {
 }
 
 static String resolveAlarmMelody(const String& alarmType) {
+    Serial.println("[DEBUG] resolveAlarmMelody called with: " + alarmType);
+    
     if (alarmType == "high") {
         if (SettingsManager.settings.alarm_high_melody.length() > 0) {
             return SettingsManager.settings.alarm_high_melody;
@@ -40,12 +42,16 @@ static String resolveAlarmMelody(const String& alarmType) {
         return sound_urgent_low;
     }
     if (alarmType == "no_data") {
+        Serial.println("[DEBUG] No data alarm - custom melody length: " + String(SettingsManager.settings.alarm_no_data_melody.length()));
         if (SettingsManager.settings.alarm_no_data_melody.length() > 0) {
+            Serial.println("[DEBUG] Using custom no_data melody");
             return SettingsManager.settings.alarm_no_data_melody;
         }
+        Serial.println("[DEBUG] Using default no_data melody: " + sound_no_data);
         return sound_no_data;
     }
 
+    Serial.println("[DEBUG] Unknown alarm type: " + alarmType);
     return "";
 }
 
