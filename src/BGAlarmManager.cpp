@@ -43,7 +43,7 @@ int debounceTicks9 = 0;  // Added for no-data alarm
 void BGAlarmManager_::setup() {
     // Clear existing alarms
     enabledAlarms.clear();
-    
+
     if (SettingsManager.settings.alarm_urgent_low_enabled) {
         AlarmData alarmData;
         alarmData.bottom = 1;
@@ -78,7 +78,7 @@ void BGAlarmManager_::setup() {
         alarmData.isSnoozed = false;
         enabledAlarms.push_back(alarmData);
     }
-    
+
     // NO DATA ALARM - NEW
     if (SettingsManager.settings.alarm_no_data_enabled) {
         AlarmData alarmData;
@@ -87,7 +87,8 @@ void BGAlarmManager_::setup() {
         alarmData.snoozeTimeMinutes = SettingsManager.settings.alarm_no_data_snooze_minutes;
         alarmData.silenceInterval = SettingsManager.settings.alarm_no_data_silence_interval;
         alarmData.lastAlarmTime = 0;
-        alarmData.alarmSound = pickAlarmMelody(SettingsManager.settings.alarm_no_data_melody, sound_no_data);
+        alarmData.alarmSound =
+            pickAlarmMelody(SettingsManager.settings.alarm_no_data_melody, sound_no_data);
         alarmData.isSnoozed = false;
         enabledAlarms.push_back(alarmData);
     }
@@ -117,23 +118,21 @@ bool isInSilentInterval(String silenceInterval) {
     return false;
 }
 
-bool isNoDataAlarm(const AlarmData& alarm) {
-    return alarm.bottom == -1 && alarm.top == -1;
-}
+bool isNoDataAlarm(const AlarmData& alarm) { return alarm.bottom == -1 && alarm.top == -1; }
 
 void BGAlarmManager_::tick() {
     auto glucoseReading = bgDisplayManager.getLastDisplayedGlucoseReading();
-    
+
     // Check no-data condition
     bool isDataStale = false;
-    
+
     // Check if glucose reading itself is old
     if (glucoseReading == nullptr) {
         isDataStale = true;
-    } else if (glucoseReading->getSecondsAgo() > SettingsManager.settings.alarm_no_data_minutes * 60) {
+    } else if (glucoseReading->getSecondsAgo() > SettingsManager.settings.alarm_no_data_value * 60) {
         isDataStale = true;
     }
-    
+
     // Handle no-data alarms
     for (AlarmData& alarmData : enabledAlarms) {
         if (isNoDataAlarm(alarmData)) {
@@ -149,7 +148,7 @@ void BGAlarmManager_::tick() {
                     }
                     return;
                 }
-                
+
                 if (activeAlarm == NULL) {
                     // New alarm
                     activeAlarm = &alarmData;
@@ -188,7 +187,7 @@ void BGAlarmManager_::tick() {
             }
         }
     }
-    
+
     // Handle glucose value alarms (original logic)
     if (glucoseReading == nullptr ||
         glucoseReading->getSecondsAgo() >
@@ -198,8 +197,9 @@ void BGAlarmManager_::tick() {
     }
 
     for (AlarmData& alarmData : enabledAlarms) {
-        if (isNoDataAlarm(alarmData)) continue;  // Skip no-data alarms
-        
+        if (isNoDataAlarm(alarmData))
+            continue;  // Skip no-data alarms
+
         if (glucoseReading->sgv >= alarmData.bottom && glucoseReading->sgv <= alarmData.top) {
             if (isInSilentInterval(alarmData.silenceInterval)) {
                 if (activeAlarm != NULL) {
@@ -237,7 +237,7 @@ void BGAlarmManager_::tick() {
             return;
         }
     }
-    
+
     if (activeAlarm != NULL && !isNoDataAlarm(*activeAlarm)) {
         activeAlarm->isSnoozed = false;
         activeAlarm->lastAlarmTime = 0;
@@ -252,14 +252,14 @@ void BGAlarmManager_::snoozeAlarm() {
         DEBUG_PRINTLN("Snoozing alarm");
         DisplayManager.clearMatrix();
         DisplayManager.setTextColor(COLOR_CYAN);
-        
+
         // Show different message for no-data alarm
         if (isNoDataAlarm(*activeAlarm)) {
             DisplayManager.printText(0, 6, "No Data", TEXT_ALIGNMENT::CENTER, 0);
         } else {
             DisplayManager.printText(0, 6, "Snoozed", TEXT_ALIGNMENT::CENTER, 0);
         }
-        
+
         delay(2000);
         bgDisplayManager.maybeRrefreshScreen(true);
         activeAlarm->isSnoozed = true;

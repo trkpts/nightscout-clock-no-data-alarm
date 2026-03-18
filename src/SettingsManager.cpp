@@ -172,7 +172,7 @@ bool SettingsManager_::loadSettingsFromFile() {
 
     // No Data Alarm
     settings.alarm_no_data_enabled = (*doc)["alarm_no_data_enabled"].as<bool>();
-    settings.alarm_no_data_minutes = (*doc)["alarm_no_data_minutes"].as<int>();
+    settings.alarm_no_data_value = (*doc)["alarm_no_data_value"].as<int>();
     settings.alarm_no_data_snooze_minutes = (*doc)["alarm_no_data_snooze_interval"].as<int>();
     settings.alarm_no_data_silence_interval = (*doc)["alarm_no_data_silence_interval"].as<String>();
     settings.alarm_no_data_melody = (*doc)["alarm_no_data_melody"].as<String>();
@@ -310,7 +310,7 @@ bool SettingsManager_::saveSettingsToFile() {
 
     // No Data Alarm
     (*doc)["alarm_no_data_enabled"] = settings.alarm_no_data_enabled;
-    (*doc)["alarm_no_data_minutes"] = settings.alarm_no_data_minutes;
+    (*doc)["alarm_no_data_value"] = settings.alarm_no_data_value;
     (*doc)["alarm_no_data_snooze_interval"] = settings.alarm_no_data_snooze_minutes;
     (*doc)["alarm_no_data_silence_interval"] = settings.alarm_no_data_silence_interval;
     (*doc)["alarm_no_data_melody"] = settings.alarm_no_data_melody;

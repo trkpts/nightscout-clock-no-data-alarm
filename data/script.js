@@ -695,6 +695,7 @@
         isValid &= validateAlarm('high');
         isValid &= validateAlarm('low');
         isValid &= validateAlarm('urgent_low');
+        isValid &= validateAlarm('no_data');
         return isValid;
     }
 
