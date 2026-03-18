@@ -84,7 +84,7 @@ void BGAlarmManager_::setup() {
         AlarmData alarmData;
         alarmData.bottom = -1;  // Special marker for no-data alarm
         alarmData.top = -1;     // Special marker for no-data alarm
-        alarmData.snoozeTimeMinutes = SettingsManager.settings.alarm_no_data_snooze_minutes;
+        alarmData.snoozeTimeMinutes = SettingsManager.settings.alarm_no_data_snooze_interval;
         alarmData.silenceInterval = SettingsManager.settings.alarm_no_data_silence_interval;
         alarmData.lastAlarmTime = 0;
         alarmData.alarmSound =

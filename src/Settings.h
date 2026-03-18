@@ -49,7 +49,7 @@ public:
     // No Data Alarm Settings
     bool alarm_no_data_enabled;
     int alarm_no_data_value;
-    int alarm_no_data_snooze_minutes;
+    int alarm_no_data_snooze_interval;
     String alarm_no_data_silence_interval;
     String alarm_no_data_melody;
     bool additional_wifi_enable;
