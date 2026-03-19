@@ -28,7 +28,7 @@
     "alarm_high_enabled": false,
     "alarm_low_enabled": false,
     "alarm_urgent_low_enabled": false,
-    "alarm_no_data_enable": false,
+    "alarm_no_data_enabled": false,
     "alarm_high_value": 280,
     "alarm_low_value": 70,
     "alarm_urgent_low_value": 55,

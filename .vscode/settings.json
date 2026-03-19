@@ -61,7 +61,7 @@
         "iostream": "cpp"
     },
     "cmake.configureOnOpen": true,
-    "files.autoSave": "afterDelay",
+    "files.autoSave": "off",
     "files.autoSaveDelay": 500,
     "editor.formatOnSave": true,
     "[cpp]": {
